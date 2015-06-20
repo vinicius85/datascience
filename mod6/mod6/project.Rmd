@@ -1,15 +1,18 @@
 ---
-title: "Investigating Exponential Distributions and CLT"
-author: "Tiago Vinícius"
-date: "06/14/2015"
-output: pdf_document
+title: "Comparing Exponential Distribution with CLT"
+author: "Tiago V R da Costa"
+date: "14/06/2015"
+output: html_document
 ---
-<br><br>
+\vspace*{2\baselineskip}
 
 #Overview
 
-It will be shown comparisons about Exponential distribution and Central Limit Theorem (CLT). Investigation is about assumption that under a large number of simulations (i.e. Law of Large Numbers), Exponential distribution converges to Gaussian distribution. The theorical mean and standard deviation are 1/lambda, so I will compare...
-<br>
+It will be shown comparisons between Exponential distribution and Central Limit Theorem (CLT). Investigation is about assumption that under a large number of simulations, according to Law of Large Numbers, Exponential distribution converges to Gaussian distribution. Therefore, analysis will compare sample mean and theoretical mean, then sample variance and theoretical variance. At last, generate plots comparing data. 
+
+\vspace*{2\baselineskip}This simulation is part of Statistical Inference Coursera Project, part I.
+
+\vspace*{2\baselineskip}
 
 #Simulations
 
@@ -17,8 +20,9 @@ First, let's simulate an exponential distribution with n = 40 and lambda = 0.2 a
 
 ```{r, echo=T}
 #Reproducible seed
-set.seed(17)
+set.seed(37)
 
+#Simulation parameters
 lambda <- 0.2
 n = 40
 rep <- 1000
@@ -28,13 +32,14 @@ exp <- replicate(rep, rexp(n, lambda))
 
 #Resultant mean
 means_exp <- apply(exp,2,mean)
-
+head(means_exp)
 ```
+
+\vspace*{2\baselineskip}
 
 #Sample Mean versus Theoretical Mean
 
-1. Show the sample mean and compare it to the theoretical mean of the distribution.
-<br>
+Question 1 states: Show the sample mean and compare it to the theoretical mean of the distribution.
 After simulation, we compare sample mean and theoretical mean:
 ```{r}
 sample_mean <- mean(means_exp)
@@ -43,19 +48,45 @@ sample_mean
 theoretical_mean <- 1/lambda
 theoretical_mean
 ```
+Answer: generated sample mean and theoretical mean are very close.
+
+\vspace*{2\baselineskip}
 
 #Sample Variance versus Theoretical Variance
-2. Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.
+Question 2 states: Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.
 ```{r}
 sample_variance <- var(means_exp)
 sample_variance
 
-theoretical_variance <- (1/lambda)^2
+theoretical_variance <- ((1/lambda)/sqrt(n))^2
 theoretical_variance
 ```
+Answer: Sample variance and theoretical variance also are very close.
 
-#Distribution
+\vspace*{2\baselineskip}
 
-3. Show that the distribution is approximately normal.
+#Approximately Normal Distribution
+
+Finally, question 3 states: Show that the distribution is approximately normal. It will be generated exponential density and normal density line and compare them.
+```{r}
+#X-Axis: Generating 40 x points using exponential means 
+x <-  seq(min(means_exp),max(means_exp), length = n)
+
+#Y-Axis: Using theorical mean and variance as Gaussian parameters
+y <- dnorm(x,mean = theoretical_mean, sd = sqrt(theoretical_variance) )
+
+#Exponential means histogram
+hist(means_exp, breaks = n, main = "Exponential means distribution"
+     , col="red", xlab = "exponential means", ylab = "density", freq=FALSE)
+
+#Normal Distribution line
+lines(x, y, pch=22, col="black", lty=1)
+
+```
+
+\vspace*{\baselineskip}Answer: Replicating 1000 times 40 exponentials will approximate Gaussian distribution.
+
+\vspace*{2\baselineskip}
 
 #Summary
+This work is just about validate that exponential distribution converges to a normal distribution over a large number of simulations, according to the Law of Large Numbers.
