@@ -1,0 +1,87 @@
+---
+title: "Exploring tooth growth dataset"
+author: "Tiago V R da Costa"
+date: "19/06/2015"
+output: html_document
+---
+  \vspace*{1\baselineskip}
+
+#Overview
+
+Exploring ToothGrowth dataset, by applying T confidencial test and hyphotesis test.
+
+\vspace*{1\baselineskip}This simulation is part of Statistical Inference Coursera Project, part II.
+
+```{r, echo=T}
+#Load dataset
+data(ToothGrowth)
+
+#Sample
+head(ToothGrowth)
+
+#Dataset description
+str(ToothGrowth)
+```
+Where OJ is orange juice and VC is vitamin C by ascorbic acid treatment.
+\vspace*{1\baselineskip}
+
+Boxplot below compares dosage by OJ and VC supplement types. 
+
+```{r, echo=T}
+par(mfrow=c(1,2))
+
+vc_data <- subset(ToothGrowth, supp=="VC")
+s <- factor(vc_data$supp)
+boxplot(len ~ s*dose, data = vc_data, col = "red", 
+        xlab = "Ascorbic acid", ylab = "Tooth Length", main = "VC Boxplot")
+
+oj_data <- subset(ToothGrowth, supp=="OJ")
+s <- factor(oj_data$supp)
+boxplot(len ~ s*dose, data = oj_data, col = "orange", 
+        xlab = "Orange juice", ylab = "Tooth Length", main = "OJ Boxplot")
+```
+
+\vspace*{2\baselineskip}
+
+#Comparing tooth growth by supp and dose
+
+In this section, comparison is given by confidence interval and hyphotesis testing of supp and dose variables. Null hyphotesis states that are difference between treatments. Default p-value is assumed 0.05.
+
+```{r, echo=T}
+#T confidence interval independent groups, assuming unequal variance, 
+#splitting groups by supp variable.
+
+g1 <- subset(ToothGrowth, supp=="VC", select=len)
+g2 <- subset(ToothGrowth, supp=="OJ", select=len)
+t.test(g1,  g2, paired = FALSE, var.equal = FALSE, data = ToothGrowth)
+```
+As p-value > 0.05, we do not have enough evidence to reject null hyphotesis. So we can not conclude there is a difference between supplement type.  
+
+\vspace*{1\baselineskip}
+
+```{r, echo=T}
+#T confidence interval,
+#splitting groups by dose variable (0.5mg and 1mg)
+
+g1 <- subset(ToothGrowth, dose=="0.5", select=len)
+g2 <- subset(ToothGrowth, dose=="1", select=len)
+t.test(g1,  g2, paired = FALSE, var.equal = TRUE, data = ToothGrowth)
+```
+As p-value < 0.05, it seems increasing of supplement (either OJ or VC) dosage, can result tooth growth.
+
+\vspace*{1\baselineskip}
+
+```{r, echo=T}
+#T confidence interval,
+#splitting groups by dose variable (1mg and 2mg)
+g1 <- subset(ToothGrowth, dose=="1", select=len)
+g2 <- subset(ToothGrowth, dose=="2", select=len)
+t.test(g1,  g2, paired = FALSE, var.equal = TRUE, data = ToothGrowth)
+```
+As p-value > 0.05, increase supplement dosage from 1 mg to 2 mg has no significant result in treatment.
+
+\vspace*{2\baselineskip}
+
+#Conclusions
+Above tests shows that supplement type does not matter, we can choose either OJ or VC. Both vitamin C have same effect. Exploratory boxplot analysis also gives us same insight.   
+However, increasing dosage from 0.5 mg to 1 mg seems discriminant factor of tooth growth. Increase dosage from 1 mg to 2 mg does not appear an effective approach.

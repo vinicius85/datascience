@@ -2,7 +2,7 @@
 title: "Comparing Exponential Distribution with CLT"
 author: "Tiago V R da Costa"
 date: "14/06/2015"
-output: html_document
+output: pdf_document
 ---
 \vspace*{2\baselineskip}
 
