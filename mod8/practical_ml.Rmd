@@ -1,0 +1,102 @@
+---
+title: "Predicting fitness activity correctness"
+author: "Tiago Vinícius"
+date: "7/20/2015"
+output: html_document
+---
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset). 
+
+(From Course Project description)
+
+<br>
+
+###Dataset preparation
+
+In order to model the predictor, I have chosen variables which does not describe dataset (0:6) and ones that are almost composed by NA's:
+
+```{r, cache=TRUE}
+set.seed(1378)
+
+#Load dataset
+dataset <- read.csv('pml-training.csv',na.strings=c("NA",""))
+dim(dataset)
+
+#Remove description variables
+dataset <- dataset[,8:160]
+
+#Select only variables that matters
+variables <- apply(!is.na(dataset),2,sum) > nrow(dataset)*0.99
+dataset<-dataset[,variables]
+
+#dataset <- subset(dataset, select = grep("accel*|classe", names(dataset)))
+
+#Updated feature dimension
+dim(dataset)
+```
+
+<br>
+
+###Split dataset
+
+Split dataset into 70% for training and 30% for testing. Then, missing values rows are excluded from dataset
+
+```{r}
+library(caret)
+
+partition <- createDataPartition(y=dataset$classe, p=0.7, list=FALSE)
+
+train_dataset <- dataset[partition,]
+test_dataset <- dataset[-partition,]
+
+
+```
+
+<br>
+
+###Modeling
+
+Perform Random Forest analysis to fit model. 5-fold cross validation to speed up algorithm output:
+
+```{r, cache=TRUE}
+#Parallelize computation
+library(doMC)
+registerDoMC(cores = 1)
+#Random forest algorithm settings. 5-fold cross validation
+
+cv <- trainControl(method = "cv", 5)
+model <- train(classe ~., method = "rf", trControl = cv, data = train_dataset, prox = TRUE,  allowParallel = TRUE)
+
+#Model summary output
+print(model)
+
+#Model output
+print(model$finalModel)
+
+```
+
+<br>
+
+Sample error is about 0.74%. Let's run prediction over test dataset and see what happens to the estimated error.
+
+###Prediction
+
+Prediction over test subset, using training set fitted model:
+
+```{r}
+prediction <- predict(model, test_dataset)
+confusionMatrix(prediction, test_dataset$classe)
+```
+
+In the end, estimate error is about 0.01%, which indicates that model is very suitable to generalize dataset instances. Now let's predict classes for provided testset:
+
+```{r}
+submission_test <- read.csv('pml-testing.csv',na.strings=c("NA",""))
+prediction <- predict(model, submission_test)
+prediction
+```
+<br>
+
+###Conclusions
+
+Even with almost no tunning, just choosing reasonable variables from dataset, Random Forest algorithm with a 5-fold cross validation is able to perform a great classification task, and seems to generalize test set.
